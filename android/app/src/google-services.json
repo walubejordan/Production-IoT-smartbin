@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "633268717315",
+    "project_id": "smartbin-4397f",
+    "storage_bucket": "smartbin-4397f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633268717315:android:96af39aa9e727b6b7a4b36",
+        "android_client_info": {
+          "package_name": "com.smartbin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGvVRBBqtqutlT571n37mh8N_qDgSzL7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
