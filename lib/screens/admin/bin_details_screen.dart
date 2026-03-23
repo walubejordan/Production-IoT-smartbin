@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/liquid_linear_progress_indicator.dart';
 
 class BinDetailScreen extends StatefulWidget {
   final int binId;
@@ -145,20 +149,26 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
 
     final fillLevel = _bin!['fill_level'] ?? 0;
     final status = _bin!['status'] ?? 'normal';
+    final double progress = (((fillLevel as num).toDouble()) / 100).clamp(0.0, 1.0);
 
     Color statusColor;
+    IconData statusIcon;
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
+        statusIcon = FontAwesomeIcons.triangleExclamation;
         break;
       case 'warning':
         statusColor = Colors.orange;
+        statusIcon = FontAwesomeIcons.circleInfo;
         break;
       case 'offline':
         statusColor = Colors.grey;
+        statusIcon = FontAwesomeIcons.cloud;
         break;
       default:
         statusColor = Colors.green;
+        statusIcon = FontAwesomeIcons.circleCheck;
     }
 
     return Scaffold(
@@ -341,82 +351,76 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Status Card
-                    Card(
-                      color: statusColor.withOpacity(0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Fill Level',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontSize: 14,
-                                      ),
+                    AppCard(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Fill Level',
+                                    style: TextStyle(
+                                      color: AppColors.subText,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      '$fillLevel%',
-                                      style: TextStyle(
-                                        fontSize: 48,
-                                        fontWeight: FontWeight.bold,
-                                        color: statusColor,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${(progress * 100).toStringAsFixed(0)}%',
+                                    style: TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: statusColor,
                                     ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withOpacity(0.2),
-                                    shape: BoxShape.circle,
                                   ),
-                                  child: Icon(
-                                    Icons.delete_outline,
-                                    size: 48,
-                                    color: statusColor,
-                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withOpacity(0.1),
+                                  shape: BoxShape.circle,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: fillLevel / 100,
-                                minHeight: 12,
-                                backgroundColor: Colors.white,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(statusColor),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                status.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                child: FaIcon(
+                                  statusIcon,
+                                  size: 48,
+                                  color: statusColor,
                                 ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          LiquidLinearProgressIndicator(
+                            value: progress,
+                            color: statusColor,
+                            height: 12,
+                            backgroundColor: const Color(0xFFECEFF3),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                          ],
-                        ),
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              status.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -430,36 +434,37 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Card(
+                    AppCard(
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
                           _buildInfoRow(
-                            Icons.qr_code,
+                            FontAwesomeIcons.qrcode,
                             'Bin Code',
                             _bin!['bin_code'],
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
-                            Icons.location_on_outlined,
+                            FontAwesomeIcons.locationDot,
                             'Location',
                             _bin!['location'],
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
-                            Icons.person_outline,
+                            FontAwesomeIcons.user,
                             'Assigned To',
                             _bin!['collector_name'] ?? 'Unassigned',
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
-                            Icons.inventory_2_outlined,
+                            FontAwesomeIcons.waterLadder,
                             'Capacity',
                             '${_bin!['capacity'] ?? 100}L',
                           ),
                           if (_bin!['last_collection'] != null) ...[
                             const Divider(height: 1),
                             _buildInfoRow(
-                              Icons.access_time,
+                              FontAwesomeIcons.clock,
                               'Last Collection',
                               _formatDateTime(_bin!['last_collection']),
                             ),
@@ -600,12 +605,16 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return ListTile(
-      leading: Icon(icon, color: Colors.grey.shade700),
+      leading: FaIcon(
+        icon,
+        color: Colors.grey.shade700,
+        size: 16,
+      ),
       title: Text(
         label,
         style: TextStyle(
           fontSize: 13,
-          color: Colors.grey.shade600,
+          color: AppColors.subText,
         ),
       ),
       trailing: Text(

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/liquid_linear_progress_indicator.dart';
+import '../../widgets/status_icon.dart';
 import 'bin_details_screen.dart';
 import 'create_bin_screen.dart';
 
@@ -252,7 +257,8 @@ class _BinsListScreenState extends State<BinListScreen> {
   }
 
   Widget _buildBinCard(Map<String, dynamic> bin) {
-    final fillLevel = bin['fill_level'] ?? 0;
+    final fillLevel = (bin['fill_level'] ?? 0).toDouble();
+    final progress = (fillLevel / 100).clamp(0.0, 1.0);
     final status = bin['status'] ?? 'normal';
     
     Color statusColor;
@@ -261,149 +267,153 @@ class _BinsListScreenState extends State<BinListScreen> {
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
-        statusIcon = Icons.warning_amber;
+        statusIcon = FontAwesomeIcons.triangleExclamation;
         break;
       case 'warning':
         statusColor = Colors.orange;
-        statusIcon = Icons.info_outline;
+        statusIcon = FontAwesomeIcons.circleInfo;
         break;
       case 'offline':
         statusColor = Colors.grey;
-        statusIcon = Icons.cloud_off;
+        statusIcon = FontAwesomeIcons.cloud;
         break;
       default:
         statusColor = Colors.green;
-        statusIcon = Icons.check_circle_outline;
+        statusIcon = FontAwesomeIcons.circleCheck;
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BinDetailScreen(binId: bin['id']),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.delete_outline,
-                      color: statusColor,
-                      size: 28,
-                    ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BinDetailScreen(binId: bin['id']),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      StatusIcon(
+                        icon: statusIcon,
+                        color: statusColor,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              bin['bin_code'],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  bin['bin_code'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.headerText,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Icon(statusIcon, size: 16, color: statusColor),
+                            const SizedBox(height: 4),
+                            Text(
+                              bin['location'],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.subText,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          bin['location'],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${fillLevel.toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            status.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  LiquidLinearProgressIndicator(
+                    value: progress,
+                    color: statusColor,
+                    height: 12,
+                    backgroundColor: Colors.grey.shade200,
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.user,
+                        size: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          bin['collector_name'] ?? 'Unassigned',
                           style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (bin['last_collection'] != null) ...[
+                        const SizedBox(width: 12),
+                        FaIcon(
+                          FontAwesomeIcons.clock,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Last: ${_formatDate(bin['last_collection'])}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '$fillLevel%',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                        ),
-                      ),
-                      Text(
-                        status.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              
-              // Fill level indicator
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: fillLevel / 100,
-                  minHeight: 6,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Additional info
-              Row(
-                children: [
-                  Icon(Icons.person_outline, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text(
-                    bin['collector_name'] ?? 'Unassigned',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (bin['last_collection'] != null) ...[
-                    Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Last: ${_formatDate(bin['last_collection'])}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

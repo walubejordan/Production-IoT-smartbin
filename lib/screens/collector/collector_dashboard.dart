@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 import '../../services/mqtt_service.dart';
 import '../login_screen.dart';
 import '../notifications_screen.dart';
 import '../settings_screen.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/liquid_linear_progress_indicator.dart';
+import '../../widgets/status_icon.dart';
 import 'map_view_screen.dart';
 import 'collection_history_screen.dart';
 
@@ -146,11 +151,22 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
               child: Column(
                 children: [
                   UserAccountsDrawerHeader(
-                    decoration: const BoxDecoration(color: Colors.green),
-                    accountName: Text(widget.user['name'] ?? 'Collector'),
-                    accountEmail: Text(widget.user['email'] ?? ''),
+                    decoration: const BoxDecoration(color: Colors.white),
+                    accountName: Text(
+                      widget.user['name'] ?? 'Collector',
+                      style: const TextStyle(
+                        color: AppColors.headerText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    accountEmail: Text(
+                      widget.user['email'] ?? '',
+                      style: const TextStyle(
+                        color: AppColors.subText,
+                      ),
+                    ),
                     currentAccountPicture: CircleAvatar(
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppColors.scaffoldBackground,
                       child: Text(
                         widget.user['name']?[0].toUpperCase() ?? 'C',
                         style: const TextStyle(
@@ -394,15 +410,25 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
             Row(
               children: [
                 _animatedStatCard(
-                    'Assigned', '${overview['assigned_bins']}', Colors.blue),
+                  'Assigned',
+                  '${overview['assigned_bins']}',
+                  Colors.blue,
+                  FontAwesomeIcons.listCheck,
+                ),
                 const SizedBox(width: 8),
                 _animatedStatCard(
                     'Pending',
                     '${overview['critical_bins'] + overview['warning_bins']}',
-                    Colors.orange),
+                  Colors.orange,
+                  FontAwesomeIcons.triangleExclamation,
+                ),
                 const SizedBox(width: 8),
                 _animatedStatCard(
-                    'Done', '${overview['today_collections']}', Colors.green),
+                  'Done',
+                  '${overview['today_collections']}',
+                  Colors.green,
+                  FontAwesomeIcons.circleCheck,
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -444,7 +470,12 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
     );
   }
 
-  Widget _animatedStatCard(String label, String value, Color color) {
+  Widget _animatedStatCard(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Expanded(
       child: TweenAnimationBuilder<double>(
         tween: Tween<double>(begin: 0, end: 1),
@@ -453,42 +484,41 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
         builder: (context, animationValue, child) {
           return Transform.scale(
             scale: animationValue,
-            child: Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  children: [
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+            child: AppCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      StatusIcon(
+                        icon: icon,
                         color: color,
+                        size: 18,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                      Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
                       label,
                       style: TextStyle(
                         fontSize: 12,
-                        color: color.withOpacity(0.8),
-                        fontWeight: FontWeight.w500,
+                        color: AppColors.subText,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );
@@ -507,55 +537,83 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
   }
 
   Widget _buildBinCard(Map<String, dynamic> bin) {
-    final fillLevel = bin['fill_level'] ?? 0;
+    final fillLevel = (bin['fill_level'] ?? 0).toDouble();
+    final progress = (fillLevel / 100).clamp(0.0, 1.0);
     final status = bin['status'] ?? 'normal';
     final Color statusColor = status == 'critical'
         ? Colors.red
-        : (status == 'warning' ? Colors.orange : Colors.green);
+        : (status == 'warning'
+            ? Colors.orange
+            : (status == 'offline' ? Colors.grey : Colors.green));
+    final IconData statusIcon = status == 'critical'
+        ? FontAwesomeIcons.triangleExclamation
+        : (status == 'warning'
+            ? FontAwesomeIcons.circleInfo
+            : (status == 'offline'
+                ? FontAwesomeIcons.cloud
+                : FontAwesomeIcons.circleCheck));
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             Row(
               children: [
-                Icon(Icons.delete, color: statusColor, size: 30),
-                const SizedBox(width: 12),
+                StatusIcon(
+                  icon: statusIcon,
+                  color: statusColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(bin['bin_code'],
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(bin['location'],
-                          style: const TextStyle(
-                              color: Colors.grey, fontSize: 13)),
+                      Text(
+                        bin['bin_code'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.headerText,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        bin['location'],
+                        style: const TextStyle(
+                          color: AppColors.subText,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Text('$fillLevel%',
-                    style: TextStyle(
-                        color: statusColor, fontWeight: FontWeight.bold)),
+                Text(
+                  '${fillLevel.toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: fillLevel / 100,
-              backgroundColor: Colors.grey.shade200,
+            const SizedBox(height: 14),
+            LiquidLinearProgressIndicator(
+              value: progress,
               color: statusColor,
-              minHeight: 6,
+              height: 12,
+              backgroundColor: Colors.grey.shade200,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
                   onPressed: () {/* Navigate logic */},
-                  icon: const Icon(Icons.directions),
+                  icon: const FaIcon(FontAwesomeIcons.locationArrow),
                   label: const Text('Route'),
                 ),
                 const SizedBox(width: 8),
@@ -563,8 +621,9 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
                   onPressed: () =>
                       _markBinCollected(bin['id'], bin['bin_code']),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white),
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Mark Collected'),
                 ),
               ],

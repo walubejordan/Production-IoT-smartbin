@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin/admin_dashboard.dart';
 import 'screens/collector/collector_dashboard.dart';
@@ -8,6 +9,7 @@ import 'services/api_service.dart';
 import 'services/mqtt_service.dart';
 import 'services/push_notifications_service.dart';
 import 'firebase_options.dart';
+import 'theme/app_colors.dart';
 
 void main() async {
   // Ensure Flutter is initialized before calling asynchronous services
@@ -64,11 +66,36 @@ class SmartBinApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseTextTheme =
+        GoogleFonts.publicSansTextTheme(ThemeData(useMaterial3: true).textTheme);
+
+    final themedTextTheme = baseTextTheme.copyWith(
+      titleLarge: baseTextTheme.titleLarge?.copyWith(
+        color: AppColors.headerText,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineSmall: baseTextTheme.headlineSmall?.copyWith(
+        color: AppColors.headerText,
+        fontWeight: FontWeight.w700,
+      ),
+      titleMedium: baseTextTheme.titleMedium?.copyWith(
+        color: AppColors.headerText,
+        fontWeight: FontWeight.w600,
+      ),
+      bodySmall: baseTextTheme.bodySmall?.copyWith(
+        color: AppColors.subText,
+      ),
+      bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+        color: AppColors.headerText,
+      ),
+    );
+
     return MaterialApp(
       title: 'SmartBin',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.scaffoldBackground,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.green,
           brightness: Brightness.light,
@@ -77,10 +104,12 @@ class SmartBinApp extends StatelessWidget {
           centerTitle: true,
           elevation: 0,
         ),
-        cardTheme: CardThemeData(
-          elevation: 2,
+        textTheme: themedTextTheme,
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          color: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
       ),
@@ -143,7 +172,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green,
+      backgroundColor: AppColors.scaffoldBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -167,7 +196,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.headerText,
               ),
             ),
             const SizedBox(height: 10),
@@ -175,12 +204,12 @@ class _SplashScreenState extends State<SplashScreen> {
               'Intelligent Waste Management',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white70,
+                color: AppColors.subText,
               ),
             ),
             const SizedBox(height: 50),
             const CircularProgressIndicator(
-              color: Colors.white,
+              color: Colors.green,
             ),
           ],
         ),

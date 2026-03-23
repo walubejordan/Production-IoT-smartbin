@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -9,6 +10,10 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 import '../../config.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/liquid_linear_progress_indicator.dart';
+import '../../widgets/status_icon.dart';
 
 class MapViewScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -651,110 +656,113 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   Widget _buildBinCard(Map<String, dynamic> bin) {
-    final fillLevel = bin['fill_level'] ?? 0;
+    final fillLevel = (bin['fill_level'] ?? 0).toDouble();
+    final progress = (fillLevel / 100).clamp(0.0, 1.0);
     final status = bin['status'] ?? 'normal';
 
     Color statusColor;
+    IconData statusIcon;
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
+        statusIcon = FontAwesomeIcons.triangleExclamation;
         break;
       case 'warning':
         statusColor = Colors.orange;
+        statusIcon = FontAwesomeIcons.circleInfo;
         break;
       default:
         statusColor = Colors.green;
+        statusIcon = FontAwesomeIcons.circleCheck;
     }
 
     return Container(
       width: 280,
       margin: const EdgeInsets.only(right: 12, bottom: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.delete_outline,
-                      color: statusColor,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          bin['bin_code'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+      child: AppCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                StatusIcon(
+                  icon: statusIcon,
+                  color: statusColor,
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bin['bin_code'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: AppColors.headerText,
                         ),
-                        Text(
-                          bin['location'],
-                          style: const TextStyle(fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        bin['location'],
+                        style: const TextStyle(fontSize: 11, color: AppColors.subText),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${fillLevel.toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            LiquidLinearProgressIndicator(
+              value: progress,
+              color: statusColor,
+              height: 10,
+              backgroundColor: const Color(0xFFECEFF3),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _navigateToBin(bin),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    child: const Text(
+                      'Navigate',
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
-                  Text(
-                    '$fillLevel%',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: statusColor,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // View details
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    child: const Text(
+                      'Details',
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        _navigateToBin(bin);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      child: const Text(
-                        'Navigate',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // View details
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      child: const Text(
-                        'Details',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

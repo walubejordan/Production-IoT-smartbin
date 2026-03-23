@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../services/api_service.dart';
@@ -11,6 +12,9 @@ import 'create_bin_screen.dart';
 import 'collectors_list_screen.dart';
 import 'create_user_screen.dart';
 import 'admin_map_view_screen.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/status_icon.dart';
+import '../../theme/app_colors.dart';
 
 class AdminDashboard extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -227,14 +231,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: Colors.green),
+            decoration: const BoxDecoration(color: Colors.white),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.scaffoldBackground,
                   child: Text(
                     widget.user['name'].toString().isNotEmpty
                         ? widget.user['name'][0].toUpperCase()
@@ -250,7 +254,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Text(
                   widget.user['name'] ?? 'Admin',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.headerText,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -258,7 +262,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Text(
                   widget.user['email'] ?? '',
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: AppColors.subText,
                     fontSize: 14,
                   ),
                 ),
@@ -456,25 +460,25 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 _buildAnimatedStatCard(
                   'Total Bins',
                   overview['total_bins'].toString(),
-                  Icons.delete_outline,
+                  FontAwesomeIcons.trashCan,
                   Colors.blue,
                 ),
                 _buildAnimatedStatCard(
                   'Collectors',
                   overview['total_collectors'].toString(),
-                  Icons.people_outline,
+                  FontAwesomeIcons.users,
                   Colors.green,
                 ),
                 _buildAnimatedStatCard(
                   'Critical Bins',
                   overview['critical_bins'].toString(),
-                  Icons.warning_amber_outlined,
+                  FontAwesomeIcons.triangleExclamation,
                   Colors.red,
                 ),
                 _buildAnimatedStatCard(
                   'Today Collections',
                   overview['today_collections'].toString(),
-                  Icons.check_circle_outline,
+                  FontAwesomeIcons.circleCheck,
                   Colors.purple,
                 ),
               ],
@@ -487,11 +491,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
             ),
             const SizedBox(height: 12),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+            AppCard(
               child: Builder(
                 builder: (context) {
                   final recentActivity =
@@ -551,50 +551,40 @@ class _AdminDashboardState extends State<AdminDashboard> {
       builder: (context, animationValue, child) {
         return Transform.scale(
           scale: animationValue,
-          child: Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: color.withOpacity(0.8),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Icon(icon, color: color, size: 28),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
+          child: AppCard(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    StatusIcon(
+                      icon: icon,
                       color: color,
+                      size: 20,
                     ),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -667,14 +657,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             const SizedBox(height: 24),
 
             // Daily Collections Chart
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+            AppCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -743,20 +728,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     ),
                   ],
                 ),
-              ),
             ),
 
             const SizedBox(height: 24),
 
             // Bins by Status Pie Chart
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+            AppCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -794,20 +773,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     ),
                   ],
                 ),
-              ),
             ),
 
             const SizedBox(height: 24),
 
             // Top Collectors
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+            AppCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -850,7 +823,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                   ],
                 ),
-              ),
             ),
           ],
         ),
