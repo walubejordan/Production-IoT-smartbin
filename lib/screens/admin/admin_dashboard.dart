@@ -7,7 +7,6 @@ import '../login_screen.dart';
 import '../notifications_screen.dart';
 import '../settings_screen.dart';
 import 'bin_list_screen.dart';
-import 'bin_details_screen.dart';
 import 'create_bin_screen.dart';
 import 'collectors_list_screen.dart';
 import 'create_user_screen.dart';
@@ -15,6 +14,7 @@ import 'admin_map_view_screen.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/status_icon.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/notification_bell_with_badge.dart';
 
 class AdminDashboard extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -29,12 +29,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _dashboardData;
   bool _isLoading = true;
+  int _unreadCount = 0;
   static const double _wideBreakpoint = 900;
 
   @override
   void initState() {
     super.initState();
     _loadDashboard();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    try {
+      final data = await apiService.getNotifications(isRead: false, limit: 1);
+      if (!mounted) return;
+      setState(() {
+        _unreadCount = (data['unread_count'] ?? 0) as int;
+      });
+    } catch (_) {
+      // If unread count fails, don't block the dashboard.
+    }
   }
 
   Future<void> _loadDashboard() async {
@@ -87,12 +102,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
         elevation: 0,
         automaticallyImplyLeading: !isWide,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
+          NotificationBellWithBadge(
+            unreadCount: _unreadCount,
+            icon: Icons.notifications_outlined,
+            iconColor: Colors.white,
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
               );
+              if (!mounted) return;
+              _loadUnreadCount();
             },
           ),
         ],

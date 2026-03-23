@@ -10,6 +10,8 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/liquid_linear_progress_indicator.dart';
 import '../../widgets/status_icon.dart';
+import '../../widgets/smartbin_fill_icon.dart';
+import '../../widgets/notification_bell_with_badge.dart';
 import 'map_view_screen.dart';
 import 'collection_history_screen.dart';
 
@@ -27,6 +29,7 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
   Map<String, dynamic>? _dashboardData;
   List<dynamic> _bins = [];
   bool _isLoading = true;
+  int _unreadCount = 0;
   static const double _wideBreakpoint = 900;
 
   // Helper to get titles for the AppBar
@@ -42,6 +45,7 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
     super.initState();
     _loadData();
     _setupMqtt();
+    _loadUnreadCount();
   }
 
   void _setupMqtt() {
@@ -55,9 +59,23 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
               notification['type'] == 'critical' ? Colors.red : Colors.orange,
         ),
       );
+      _loadUnreadCount();
       _loadData();
     };
     mqttService.onBinStatusUpdate = (topic, data) => _loadBins();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    try {
+      final data = await apiService.getNotifications(isRead: false, limit: 1);
+      if (!mounted) return;
+      setState(() {
+        _unreadCount = (data['unread_count'] ?? 0) as int;
+      });
+    } catch (_) {
+      // Ignore badge failures.
+    }
   }
 
   Future<void> _loadData() async {
@@ -134,12 +152,16 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
+          NotificationBellWithBadge(
+            unreadCount: _unreadCount,
+            icon: Icons.notifications_outlined,
+            iconColor: Colors.white,
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
               );
+              if (!mounted) return;
+              _loadUnreadCount();
             },
           ),
         ],
@@ -545,13 +567,6 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
         : (status == 'warning'
             ? Colors.orange
             : (status == 'offline' ? Colors.grey : Colors.green));
-    final IconData statusIcon = status == 'critical'
-        ? FontAwesomeIcons.triangleExclamation
-        : (status == 'warning'
-            ? FontAwesomeIcons.circleInfo
-            : (status == 'offline'
-                ? FontAwesomeIcons.cloud
-                : FontAwesomeIcons.circleCheck));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -561,10 +576,9 @@ class _CollectorDashboardState extends State<CollectorDashboard> {
           children: [
             Row(
               children: [
-                StatusIcon(
-                  icon: statusIcon,
-                  color: statusColor,
-                  size: 20,
+                SmartBinFillIcon(
+                  fillLevel: fillLevel,
+                  size: 22,
                 ),
                 const SizedBox(width: 14),
                 Expanded(

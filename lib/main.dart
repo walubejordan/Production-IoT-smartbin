@@ -105,11 +105,15 @@ class SmartBinApp extends StatelessWidget {
           elevation: 0,
         ),
         textTheme: themedTextTheme,
-        cardTheme: const CardThemeData(
+        cardTheme: CardThemeData(
           elevation: 0,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
+          color: Colors.white.withOpacity(0.12),
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
+            side: BorderSide(
+              color: Color(0xA6FFFFFF),
+              width: 1,
+            ),
           ),
         ),
       ),

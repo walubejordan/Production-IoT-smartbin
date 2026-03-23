@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -15,7 +14,7 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/liquid_linear_progress_indicator.dart';
-import '../../widgets/status_icon.dart';
+import '../../widgets/smartbin_fill_icon.dart';
 
 class AdminMapViewScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -576,11 +575,6 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                             final progress = (fillLevel / 100).clamp(0.0, 1.0);
                             final status = bin['status'] ?? 'normal';
                             final statusColor = _getStatusColor(status);
-                            final IconData statusIcon = status == 'critical'
-                                ? FontAwesomeIcons.triangleExclamation
-                                : (status == 'warning'
-                                    ? FontAwesomeIcons.circleInfo
-                                    : FontAwesomeIcons.circleCheck);
 
                             return Container(
                               width: 280,
@@ -593,10 +587,9 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        StatusIcon(
-                                          icon: statusIcon,
-                                          color: statusColor,
-                                          size: 18,
+                                        SmartBinFillIcon(
+                                          fillLevel: fillLevel,
+                                          size: 22,
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(

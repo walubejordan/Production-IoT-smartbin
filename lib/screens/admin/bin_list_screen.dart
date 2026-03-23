@@ -5,7 +5,7 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/liquid_linear_progress_indicator.dart';
-import '../../widgets/status_icon.dart';
+import '../../widgets/smartbin_fill_icon.dart';
 import 'bin_details_screen.dart';
 import 'create_bin_screen.dart';
 
@@ -31,6 +31,19 @@ class _BinsListScreenState extends State<BinListScreen> {
     _loadBins();
   }
 
+  List<dynamic> _filterBins(List<dynamic> bins) {
+    final q = _searchQuery.toLowerCase();
+    return bins.where((bin) {
+      final binCode = (bin['bin_code'] ?? '').toString().toLowerCase();
+      final location = (bin['location'] ?? '').toString().toLowerCase();
+
+      final matchesSearch = binCode.contains(q) || location.contains(q);
+      final matchesStatus = _statusFilter == null || bin['status'] == _statusFilter;
+
+      return matchesSearch && matchesStatus;
+    }).toList();
+  }
+
   Future<void> _loadBins() async {
     setState(() => _isLoading = true);
     
@@ -40,10 +53,9 @@ class _BinsListScreenState extends State<BinListScreen> {
       final bins = await apiService.getBins(status: _statusFilter);
       setState(() {
         _bins = bins;
-        _filteredBins = bins;
+        _filteredBins = _filterBins(bins);
         _isLoading = false;
       });
-      _applyFilters();
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
@@ -55,23 +67,7 @@ class _BinsListScreenState extends State<BinListScreen> {
   }
 
   void _applyFilters() {
-    setState(() {
-      _filteredBins = _bins.where((bin) {
-        final matchesSearch = bin['bin_code']
-                .toString()
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()) ||
-            bin['location']
-                .toString()
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase());
-        
-        final matchesStatus = _statusFilter == null || 
-            bin['status'] == _statusFilter;
-        
-        return matchesSearch && matchesStatus;
-      }).toList();
-    });
+    setState(() => _filteredBins = _filterBins(_bins));
   }
 
   void _showFilterDialog() {
@@ -262,24 +258,19 @@ class _BinsListScreenState extends State<BinListScreen> {
     final status = bin['status'] ?? 'normal';
     
     Color statusColor;
-    IconData statusIcon;
     
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
-        statusIcon = FontAwesomeIcons.triangleExclamation;
         break;
       case 'warning':
         statusColor = Colors.orange;
-        statusIcon = FontAwesomeIcons.circleInfo;
         break;
       case 'offline':
         statusColor = Colors.grey;
-        statusIcon = FontAwesomeIcons.cloud;
         break;
       default:
         statusColor = Colors.green;
-        statusIcon = FontAwesomeIcons.circleCheck;
     }
 
     return Padding(
@@ -304,10 +295,9 @@ class _BinsListScreenState extends State<BinListScreen> {
                 children: [
                   Row(
                     children: [
-                      StatusIcon(
-                        icon: statusIcon,
-                        color: statusColor,
-                        size: 18,
+                      SmartBinFillIcon(
+                        fillLevel: fillLevel,
+                        size: 24,
                       ),
                       const SizedBox(width: 14),
                       Expanded(

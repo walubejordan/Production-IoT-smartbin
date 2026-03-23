@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -13,7 +12,7 @@ import '../../config.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/liquid_linear_progress_indicator.dart';
-import '../../widgets/status_icon.dart';
+import '../../widgets/smartbin_fill_icon.dart';
 
 class MapViewScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -661,19 +660,15 @@ class _MapViewScreenState extends State<MapViewScreen> {
     final status = bin['status'] ?? 'normal';
 
     Color statusColor;
-    IconData statusIcon;
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
-        statusIcon = FontAwesomeIcons.triangleExclamation;
         break;
       case 'warning':
         statusColor = Colors.orange;
-        statusIcon = FontAwesomeIcons.circleInfo;
         break;
       default:
         statusColor = Colors.green;
-        statusIcon = FontAwesomeIcons.circleCheck;
     }
 
     return Container(
@@ -686,10 +681,9 @@ class _MapViewScreenState extends State<MapViewScreen> {
           children: [
             Row(
               children: [
-                StatusIcon(
-                  icon: statusIcon,
-                  color: statusColor,
-                  size: 18,
+                SmartBinFillIcon(
+                  fillLevel: fillLevel,
+                  size: 22,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
