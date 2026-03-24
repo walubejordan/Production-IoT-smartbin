@@ -159,6 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Image.asset(
               'assets/reference/truck-hero.png',
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Text(
+                    'Missing asset: assets/reference/truck-hero.png',
+                    style: TextStyle(color: AppColors.subText),
+                  ),
+                );
+              },
             ),
           ),
           Positioned(
