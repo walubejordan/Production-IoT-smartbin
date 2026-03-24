@@ -11,7 +11,7 @@ import 'create_bin_screen.dart';
 
 class BinListScreen extends StatefulWidget {
   final Map<String, dynamic> user;
-  
+
   const BinListScreen({super.key, required this.user});
 
   @override
@@ -38,7 +38,8 @@ class _BinsListScreenState extends State<BinListScreen> {
       final location = (bin['location'] ?? '').toString().toLowerCase();
 
       final matchesSearch = binCode.contains(q) || location.contains(q);
-      final matchesStatus = _statusFilter == null || bin['status'] == _statusFilter;
+      final matchesStatus =
+          _statusFilter == null || bin['status'] == _statusFilter;
 
       return matchesSearch && matchesStatus;
     }).toList();
@@ -46,9 +47,9 @@ class _BinsListScreenState extends State<BinListScreen> {
 
   Future<void> _loadBins() async {
     setState(() => _isLoading = true);
-    
+
     final apiService = Provider.of<ApiService>(context, listen: false);
-    
+
     try {
       final bins = await apiService.getBins(status: _statusFilter);
       setState(() {
@@ -136,12 +137,12 @@ class _BinsListScreenState extends State<BinListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Bins'),
+        title: const Text('Available Bins'),
         actions: [
           IconButton(
             icon: Icon(
-              _statusFilter != null 
-                  ? Icons.filter_alt 
+              _statusFilter != null
+                  ? Icons.filter_alt
                   : Icons.filter_alt_outlined,
             ),
             onPressed: _showFilterDialog,
@@ -188,7 +189,7 @@ class _BinsListScreenState extends State<BinListScreen> {
               ),
             ),
 
-          // Bins list
+          // Bins list rendered from API response via ListView.builder
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -256,9 +257,9 @@ class _BinsListScreenState extends State<BinListScreen> {
     final fillLevel = (bin['fill_level'] ?? 0).toDouble();
     final progress = (fillLevel / 100).clamp(0.0, 1.0);
     final status = bin['status'] ?? 'normal';
-    
+
     Color statusColor;
-    
+
     switch (status) {
       case 'critical':
         statusColor = Colors.red;
@@ -411,12 +412,12 @@ class _BinsListScreenState extends State<BinListScreen> {
 
   String _formatDate(String? dateStr) {
     if (dateStr == null) return 'Never';
-    
+
     try {
       final date = DateTime.parse(dateStr);
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 0) {
         return '${difference.inDays}d ago';
       } else if (difference.inHours > 0) {

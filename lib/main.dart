@@ -25,7 +25,7 @@ void main() async {
     // If Firebase isn't configured yet, we still allow the app to run.
     debugPrint('Firebase init skipped/failed: $e');
   }
-  
+
   // Initialize API service
   final apiService = ApiService();
   await apiService.init();
@@ -48,7 +48,7 @@ void main() async {
   } catch (e) {
     debugPrint('Push notifications init failed: $e');
   }
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -66,8 +66,8 @@ class SmartBinApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseTextTheme =
-        GoogleFonts.publicSansTextTheme(ThemeData(useMaterial3: true).textTheme);
+    final baseTextTheme = GoogleFonts.publicSansTextTheme(
+        ThemeData(useMaterial3: true).textTheme);
 
     final themedTextTheme = baseTextTheme.copyWith(
       titleLarge: baseTextTheme.titleLarge?.copyWith(
@@ -97,23 +97,38 @@ class SmartBinApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: AppColors.scaffoldBackground,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
+          seedColor: AppColors.primaryGreen,
+          primary: AppColors.primaryGreen,
           brightness: Brightness.light,
         ),
         appBarTheme: const AppBarTheme(
-          centerTitle: true,
+          centerTitle: false,
           elevation: 0,
+          backgroundColor: AppColors.scaffoldBackground,
+          foregroundColor: AppColors.headerText,
         ),
         textTheme: themedTextTheme,
         cardTheme: CardThemeData(
           elevation: 0,
-          color: Colors.white.withOpacity(0.12),
+          color: AppColors.cardBackground,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
-            side: BorderSide(
-              color: Color(0xA6FFFFFF),
-              width: 1,
-            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.cardBackground,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: AppColors.primaryGreen),
           ),
         ),
       ),

@@ -97,15 +97,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_getAppBarTitle()),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.scaffoldBackground,
+        foregroundColor: AppColors.headerText,
         elevation: 0,
         automaticallyImplyLeading: !isWide,
         actions: [
           NotificationBellWithBadge(
             unreadCount: _unreadCount,
-            icon: Icons.notifications_outlined,
-            iconColor: Colors.white,
+            icon: Icons.notifications,
+            iconColor: AppColors.headerText,
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
@@ -125,22 +125,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
               currentIndex: _selectedIndex,
               onTap: (index) => setState(() => _selectedIndex = index),
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.green,
+              selectedItemColor: AppColors.primaryGreen,
               unselectedItemColor: Colors.grey,
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.dashboard_outlined),
-                  activeIcon: Icon(Icons.dashboard),
+                  icon: _navAssetIcon('assets/reference/dashboard-ref.png'),
+                  activeIcon: _navAssetIcon(
+                    'assets/reference/dashboard-ref.png',
+                    active: true,
+                  ),
                   label: 'Dashboard',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.delete_outline),
-                  activeIcon: Icon(Icons.delete),
+                  icon: _navAssetIcon('assets/reference/recycle-bin.png'),
+                  activeIcon: _navAssetIcon(
+                    'assets/reference/recycle-bin.png',
+                    active: true,
+                  ),
                   label: 'Bins',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.people_outline),
-                  activeIcon: Icon(Icons.people),
+                  icon: _navAssetIcon('assets/reference/profile.png'),
+                  activeIcon: _navAssetIcon(
+                    'assets/reference/profile.png',
+                    active: true,
+                  ),
                   label: 'Collectors',
                 ),
               ],
@@ -164,21 +173,32 @@ class _AdminDashboardState extends State<AdminDashboard> {
               setState(() => _selectedIndex = index),
           labelType: NavigationRailLabelType.all,
           backgroundColor: Colors.white,
-          destinations: const [
+          destinations: [
             NavigationRailDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon: Icon(Icons.dashboard),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
               label: Text('Dashboard'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.delete_outline),
-              selectedIcon: Icon(Icons.delete),
+              icon: _navAssetIcon('assets/reference/recycle-bin.png'),
+              selectedIcon: _navAssetIcon(
+                'assets/reference/recycle-bin.png',
+                active: true,
+              ),
               label: Text('Bins'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.people_outline),
-              selectedIcon: Icon(Icons.people),
-              label: Text('Collectors'),
+              icon: Icon(Icons.local_shipping_outlined),
+              selectedIcon: Icon(Icons.local_shipping),
+              label: Text('Truck'),
+            ),
+            NavigationRailDestination(
+              icon: _navAssetIcon('assets/reference/profile.png'),
+              selectedIcon: _navAssetIcon(
+                'assets/reference/profile.png',
+                active: true,
+              ),
+              label: Text('Profile'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.map_outlined),
@@ -186,18 +206,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
               label: Text('Map'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.add_circle_outline),
-              selectedIcon: Icon(Icons.add_circle),
-              label: Text('Add Bin'),
-            ),
-            NavigationRailDestination(
               icon: Icon(Icons.person_add_outlined),
               selectedIcon: Icon(Icons.person_add),
               label: Text('Add User'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.analytics_outlined),
-              selectedIcon: Icon(Icons.analytics),
+              icon: _navAssetIcon('assets/reference/analytics.png'),
+              selectedIcon: _navAssetIcon(
+                'assets/reference/analytics.png',
+                active: true,
+              ),
               label: Text('Analytics'),
             ),
           ],
@@ -230,13 +248,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 1:
         return 'Manage Bins';
       case 2:
-        return 'Collectors List';
+        return 'Fleet Team';
       case 3:
-        return 'Bins Map';
+        return 'User Profile';
       case 4:
-        return 'Add New Bin';
+        return 'Bins Map';
       case 5:
-        return 'Add New User';
+        return 'Add New Bin';
       case 6:
         return 'System Analytics';
       default:
@@ -375,11 +393,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 2:
         return CollectorsListScreen(user: widget.user);
       case 3:
-        return AdminMapViewScreen(user: widget.user);
+        return SettingsScreen(user: widget.user);
       case 4:
-        return CreateBinScreen(user: widget.user);
+        return AdminMapViewScreen(user: widget.user);
       case 5:
-        return CreateUserScreen(user: widget.user);
+        return CreateBinScreen(user: widget.user);
       case 6:
         return _buildAnalytics();
       default:
@@ -468,39 +486,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
             ),
             const SizedBox(height: 16),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.2,
-              children: [
-                _buildAnimatedStatCard(
-                  'Total Bins',
-                  overview['total_bins'].toString(),
-                  FontAwesomeIcons.trashCan,
-                  Colors.blue,
-                ),
-                _buildAnimatedStatCard(
-                  'Collectors',
-                  overview['total_collectors'].toString(),
-                  FontAwesomeIcons.users,
-                  Colors.green,
-                ),
-                _buildAnimatedStatCard(
-                  'Critical Bins',
-                  overview['critical_bins'].toString(),
-                  FontAwesomeIcons.triangleExclamation,
-                  Colors.red,
-                ),
-                _buildAnimatedStatCard(
-                  'Today Collections',
-                  overview['today_collections'].toString(),
-                  FontAwesomeIcons.circleCheck,
-                  Colors.purple,
-                ),
-              ],
+            SizedBox(
+              height: 110,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildTopStatCard(
+                    'Total Vehicles',
+                    overview['total_collectors'].toString(),
+                    Icons.local_shipping,
+                  ),
+                  _buildTopStatCard(
+                    'Employees',
+                    overview['total_collectors'].toString(),
+                    Icons.groups_rounded,
+                  ),
+                  _buildTopStatCard(
+                    'Bins',
+                    overview['total_bins'].toString(),
+                    Icons.delete_outline,
+                  ),
+                  _buildTopStatCard(
+                    'Zones',
+                    (overview['zones'] ?? 0).toString(),
+                    Icons.map_outlined,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -558,6 +570,59 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTopStatCard(String title, String value, IconData icon) {
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 10),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.primaryGreen.withOpacity(0.15),
+              child: Icon(icon, size: 16, color: AppColors.primaryGreen),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.subText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navAssetIcon(String asset, {bool active = false}) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: active ? AppColors.primaryGreen.withOpacity(0.12) : null,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Image.asset(asset, width: 18, height: 18),
     );
   }
 
@@ -675,123 +740,122 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(height: 24),
 
-            // Daily Collections Chart
+            // Daily Collections Dark Bar Chart
             AppCard(
               padding: const EdgeInsets.all(20),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Daily Collections (Last 7 Days)',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Daily Collections (Last 7 Days)',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111827),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
+                    child: SizedBox(
                       height: 200,
-                      child: LineChart(
-                        LineChartData(
+                      child: BarChart(
+                        BarChartData(
                           gridData: const FlGridData(show: false),
-                          titlesData: FlTitlesData(
-                            leftTitles: const AxisTitles(
-                              sideTitles: SideTitles(
-                                  showTitles: true, reservedSize: 40),
+                          titlesData: const FlTitlesData(
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
                             ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  if (value.toInt() >=
-                                      dailyCollections.length) {
-                                    return const Text('');
-                                  }
-                                  final date =
-                                      dailyCollections[value.toInt()]['date'];
-                                  return Text(
-                                    date != null
-                                        ? DateTime.parse(date).day.toString()
-                                        : '',
-                                    style: const TextStyle(fontSize: 12),
-                                  );
-                                },
-                              ),
+                            rightTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
                             ),
-                            topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                            topTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                           ),
                           borderData: FlBorderData(show: false),
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots:
-                                  dailyCollections.asMap().entries.map((entry) {
-                                return FlSpot(
-                                  entry.key.toDouble(),
-                                  _dashboardValueToDouble(entry.value['count']),
-                                );
-                              }).toList(),
-                              isCurved: true,
-                              color: Colors.green,
-                              barWidth: 3,
-                              belowBarData: BarAreaData(
-                                show: true,
-                                color: Colors.green.withOpacity(0.1),
-                              ),
-                              dotData: const FlDotData(show: true),
-                            ),
-                          ],
+                          barGroups:
+                              dailyCollections.asMap().entries.map((entry) {
+                            return BarChartGroupData(
+                              x: entry.key,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: _dashboardValueToDouble(
+                                    entry.value['count'],
+                                  ),
+                                  color: Colors.white,
+                                  width: 10,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ],
+                            );
+                          }).toList(),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
 
-            // Bins by Status Pie Chart
+            // Smooth Area Wave Chart
             AppCard(
               padding: const EdgeInsets.all(20),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bins by Status',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bin Collection Trend',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 200,
+                    child: LineChart(
+                      LineChartData(
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots:
+                                dailyCollections.asMap().entries.map((entry) {
+                              return FlSpot(
+                                entry.key.toDouble(),
+                                _dashboardValueToDouble(entry.value['count']),
+                              );
+                            }).toList(),
+                            isCurved: true,
+                            color: AppColors.primaryGreen,
+                            barWidth: 4,
+                            dotData: const FlDotData(show: false),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              color: AppColors.primaryGreen.withOpacity(0.2),
+                            ),
                           ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 200,
-                      child: PieChart(
-                        PieChartData(
-                          sections: binsByStatus.map((status) {
-                            final count =
-                                (status['count'] as int?)?.toDouble() ?? 0;
-                            final statusName =
-                                status['status'] as String? ?? 'unknown';
-                            return PieChartSectionData(
-                              value: count,
-                              title: '$statusName\n$count',
-                              color: _getStatusColor(statusName),
-                              radius: 60,
-                              titleStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            );
-                          }).toList(),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 40,
+                        ],
+                        gridData: const FlGridData(show: false),
+                        borderData: FlBorderData(show: false),
+                        titlesData: const FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -800,48 +864,48 @@ class _AdminDashboardState extends State<AdminDashboard> {
             AppCard(
               padding: const EdgeInsets.all(20),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Top Collectors (This Month)',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...topCollectors.map((collector) {
-                      final name = collector['name'] as String? ?? 'Unknown';
-                      final collections = collector['collections'] as int? ?? 0;
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.green.withOpacity(0.1),
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : 'C',
-                            style: const TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Top Collectors (This Month)',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                        title: Text(name),
-                        trailing: Text(
-                          '$collections collections',
+                  ),
+                  const SizedBox(height: 16),
+                  ...topCollectors.map((collector) {
+                    final name = collector['name'] as String? ?? 'Unknown';
+                    final collections = collector['collections'] as int? ?? 0;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.green.withOpacity(0.1),
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : 'C',
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
                             color: Colors.green,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      );
-                    }),
-                    if (topCollectors.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Text('No collection data available'),
                         ),
                       ),
-                  ],
-                ),
+                      title: Text(name),
+                      trailing: Text(
+                        '$collections collections',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    );
+                  }),
+                  if (topCollectors.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text('No collection data available'),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
