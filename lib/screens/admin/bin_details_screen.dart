@@ -23,6 +23,7 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
   List<dynamic> _collectors = [];
   bool _isLoadingCollectors = false;
   int? _selectedCollectorId;
+  bool _inlineSaving = false;
 
   @override
   void initState() {
@@ -131,6 +132,115 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
     }
   }
 
+  Future<void> _showQuickTextEdit({
+    required String title,
+    required String initialValue,
+    required Future<void> Function(String value) onSave,
+  }) async {
+    final controller = TextEditingController(text: initialValue);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _inlineSaving
+                      ? null
+                      : () async {
+                          setState(() => _inlineSaving = true);
+                          try {
+                            await onSave(controller.text.trim());
+                            if (!mounted) return;
+                            Navigator.pop(context);
+                            await _loadBinDetails();
+                          } finally {
+                            if (mounted) setState(() => _inlineSaving = false);
+                          }
+                        },
+                  child: Text(_inlineSaving ? 'Saving...' : 'Save'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showQuickCollectorEdit() async {
+    if (_collectors.isEmpty) {
+      await _loadCollectors();
+    }
+    if (!mounted) return;
+    int? localValue = _selectedCollectorId;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Assign Collector',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int>(
+              initialValue: localValue,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: _collectors.map((collector) {
+                return DropdownMenuItem<int>(
+                  value: collector['id'] as int,
+                  child: Text(collector['name'] as String),
+                );
+              }).toList(),
+              onChanged: (value) => localValue = value,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final apiService =
+                      Provider.of<ApiService>(context, listen: false);
+                  await apiService.updateBin(widget.binId,
+                      assignedTo: localValue);
+                  if (!mounted) return;
+                  setState(() => _selectedCollectorId = localValue);
+                  Navigator.pop(context);
+                  await _loadBinDetails();
+                },
+                child: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -149,7 +259,8 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
 
     final fillLevel = _bin!['fill_level'] ?? 0;
     final status = _bin!['status'] ?? 'normal';
-    final double progress = (((fillLevel as num).toDouble()) / 100).clamp(0.0, 1.0);
+    final double progress =
+        (((fillLevel as num).toDouble()) / 100).clamp(0.0, 1.0);
 
     Color statusColor;
     IconData statusIcon;
@@ -442,18 +553,47 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
                             FontAwesomeIcons.qrcode,
                             'Bin Code',
                             _bin!['bin_code'],
+                            onTap: () => _showQuickTextEdit(
+                              title: 'Edit Bin Name',
+                              initialValue: _bin!['bin_code']?.toString() ?? '',
+                              onSave: (value) async {
+                                if (value.isEmpty) return;
+                                final apiService = Provider.of<ApiService>(
+                                    context,
+                                    listen: false);
+                                await apiService.updateBin(
+                                  widget.binId,
+                                  binCode: value,
+                                );
+                              },
+                            ),
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
                             FontAwesomeIcons.locationDot,
                             'Location',
                             _bin!['location'],
+                            onTap: () => _showQuickTextEdit(
+                              title: 'Edit Location',
+                              initialValue: _bin!['location']?.toString() ?? '',
+                              onSave: (value) async {
+                                if (value.isEmpty) return;
+                                final apiService = Provider.of<ApiService>(
+                                    context,
+                                    listen: false);
+                                await apiService.updateBin(
+                                  widget.binId,
+                                  location: value,
+                                );
+                              },
+                            ),
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
                             FontAwesomeIcons.user,
                             'Assigned To',
                             _bin!['collector_name'] ?? 'Unassigned',
+                            onTap: _showQuickCollectorEdit,
                           ),
                           const Divider(height: 1),
                           _buildInfoRow(
@@ -603,8 +743,14 @@ class _BinDetailScreenState extends State<BinDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    VoidCallback? onTap,
+  }) {
     return ListTile(
+      onTap: onTap,
       leading: FaIcon(
         icon,
         color: Colors.grey.shade700,

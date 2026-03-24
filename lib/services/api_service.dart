@@ -213,7 +213,17 @@ class ApiService {
 
     final data = json.decode(response.body);
     if (response.statusCode == 200 && data['success']) {
-      return data['data'];
+      final raw = data['data'];
+      if (raw is List) {
+        return raw;
+      }
+      if (raw is Map<String, dynamic>) {
+        final nested = raw['bins'] ?? raw['items'] ?? raw['results'];
+        if (nested is List) {
+          return nested;
+        }
+      }
+      return <dynamic>[];
     } else {
       throw Exception(data['message'] ?? 'Failed to get bins');
     }
@@ -553,6 +563,7 @@ class ApiService {
   // Update bin (Admin only)
   Future<void> updateBin(
     int binId, {
+    String? binCode,
     String? location,
     double? latitude,
     double? longitude,
@@ -561,6 +572,7 @@ class ApiService {
     String? status,
   }) async {
     final Map<String, dynamic> body = {};
+    if (binCode != null) body['bin_code'] = binCode;
     if (location != null) body['location'] = location;
     if (latitude != null) body['latitude'] = latitude;
     if (longitude != null) body['longitude'] = longitude;

@@ -68,6 +68,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _showNotificationDetails(
+      Map<String, dynamic> notification) async {
+    final binId = notification['bin_id'];
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              notification['title']?.toString() ?? 'Notification',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            Text(notification['message']?.toString() ?? ''),
+            const SizedBox(height: 10),
+            Text('Time: ${_formatDateTime(notification['created_at'])}'),
+            Text('Bin ID: ${binId ?? 'N/A'}'),
+            if (notification['bin_code'] != null)
+              Text('Bin Code: ${notification['bin_code']}'),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                if (binId != null)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.of(this.context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BinDetailScreen(binId: binId),
+                          ),
+                        );
+                      },
+                      child: const Text('Open Bin'),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _refreshTimer?.cancel();
@@ -224,15 +279,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (!isRead) {
             _markAsRead(notification['id']);
           }
-          // Navigate to bin details if bin_id exists
-          final binId = notification['bin_id'];
-          if (binId != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => BinDetailScreen(binId: binId),
-              ),
-            );
-          }
+          _showNotificationDetails(notification);
         },
         isThreeLine: true,
       ),

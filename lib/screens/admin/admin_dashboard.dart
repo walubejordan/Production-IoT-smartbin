@@ -137,9 +137,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   label: 'Dashboard',
                 ),
                 BottomNavigationBarItem(
-                  icon: _navAssetIcon('assets/reference/recycle-bin.png'),
+                  icon: _navAssetIcon('assets/reference/image_d7ba5a.png'),
                   activeIcon: _navAssetIcon(
-                    'assets/reference/recycle-bin.png',
+                    'assets/reference/image_d7ba5a.png',
                     active: true,
                   ),
                   label: 'Bins',
@@ -167,70 +167,73 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildWideBody() {
     return Row(
       children: [
-        NavigationRail(
-          selectedIndex: _selectedIndex.clamp(0, 6),
-          onDestinationSelected: (index) =>
-              setState(() => _selectedIndex = index),
-          labelType: NavigationRailLabelType.all,
-          backgroundColor: Colors.white,
-          destinations: [
-            NavigationRailDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: Text('Dashboard'),
+        Container(
+          width: 220,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              right: BorderSide(color: Colors.grey.shade200),
             ),
-            NavigationRailDestination(
-              icon: _navAssetIcon('assets/reference/recycle-bin.png'),
-              selectedIcon: _navAssetIcon(
-                'assets/reference/recycle-bin.png',
-                active: true,
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(2, 0),
               ),
-              label: Text('Bins'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.local_shipping_outlined),
-              selectedIcon: Icon(Icons.local_shipping),
-              label: Text('Truck'),
-            ),
-            NavigationRailDestination(
-              icon: _navAssetIcon('assets/reference/profile.png'),
-              selectedIcon: _navAssetIcon(
-                'assets/reference/profile.png',
-                active: true,
+            ],
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _buildSideNavItem(
+                index: 0,
+                label: 'Dashboard',
+                icon: const Icon(Icons.home_outlined),
               ),
-              label: Text('Profile'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.map_outlined),
-              selectedIcon: Icon(Icons.map),
-              label: Text('Map'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.person_add_outlined),
-              selectedIcon: Icon(Icons.person_add),
-              label: Text('Add User'),
-            ),
-            NavigationRailDestination(
-              icon: _navAssetIcon('assets/reference/analytics.png'),
-              selectedIcon: _navAssetIcon(
-                'assets/reference/analytics.png',
-                active: true,
+              _buildSideNavItem(
+                index: 1,
+                label: 'Bins',
+                icon: _navAssetIcon('assets/reference/image_d7ba5a.png'),
               ),
-              label: Text('Analytics'),
-            ),
-          ],
-          trailing: Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: IconButton(
-                  tooltip: 'Logout',
-                  icon: const Icon(Icons.logout, color: Colors.red),
-                  onPressed: _logout,
-                ),
+              _buildSideNavItem(
+                index: 2,
+                label: 'Truck',
+                icon: const Icon(Icons.local_shipping_outlined),
               ),
-            ),
+              _buildSideNavItem(
+                index: 4,
+                label: 'Map',
+                icon: const Icon(Icons.map_outlined),
+              ),
+              _buildSideNavItem(
+                index: 5,
+                label: 'Add User',
+                icon: const Icon(Icons.person_add_outlined),
+              ),
+              _buildSideNavItem(
+                index: 6,
+                label: 'Analytics',
+                icon: _navAssetIcon('assets/reference/analytics.png'),
+              ),
+              const Spacer(),
+              _buildSideNavItem(
+                index: 7,
+                label: 'Settings',
+                icon: const Icon(Icons.settings_outlined),
+              ),
+              _buildSideNavItem(
+                index: 8,
+                label: 'Profile',
+                icon: _navAssetIcon('assets/reference/profile.png'),
+              ),
+              const SizedBox(height: 8),
+              IconButton(
+                tooltip: 'Logout',
+                icon: const Icon(Icons.logout, color: Colors.red),
+                onPressed: _logout,
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
         const VerticalDivider(width: 1),
@@ -250,13 +253,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 2:
         return 'Fleet Team';
       case 3:
-        return 'User Profile';
+        return 'Legacy Settings';
       case 4:
         return 'Bins Map';
       case 5:
         return 'Add New Bin';
       case 6:
         return 'System Analytics';
+      case 7:
+        return 'Settings';
+      case 8:
+        return 'Profile';
       default:
         return 'SmartBin Admin';
     }
@@ -365,6 +372,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
               );
             },
           ),
+          ListTile(
+            leading: _navAssetIcon('assets/reference/profile.png'),
+            title: const Text('Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              setState(() => _selectedIndex = 8);
+            },
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
@@ -400,6 +415,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         return CreateBinScreen(user: widget.user);
       case 6:
         return _buildAnalytics();
+      case 7:
+        return SettingsScreen(user: widget.user);
+      case 8:
+        return SettingsScreen(user: widget.user);
       default:
         return _buildDashboard();
     }
@@ -622,7 +641,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
         color: active ? AppColors.primaryGreen.withOpacity(0.12) : null,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Image.asset(asset, width: 18, height: 18),
+      child: Image.asset(
+        asset,
+        width: 18,
+        height: 18,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.image_not_supported_outlined, size: 18),
+      ),
+    );
+  }
+
+  Widget _buildSideNavItem({
+    required int index,
+    required String label,
+    required Widget icon,
+  }) {
+    final selected = _selectedIndex == index;
+    return ListTile(
+      dense: true,
+      leading: icon,
+      title: Text(label),
+      selected: selected,
+      selectedTileColor: AppColors.primaryGreen.withOpacity(0.12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onTap: () => setState(() => _selectedIndex = index),
     );
   }
 

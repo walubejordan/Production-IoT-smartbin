@@ -36,6 +36,10 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
   List<LatLng> _routePoints = const [];
   bool _routing = false;
 
+  bool get _hasMapboxToken =>
+      AppConfig.mapboxApiKey.isNotEmpty &&
+      !AppConfig.mapboxApiKey.contains('YOUR_MAPBOX_KEY_HERE');
+
   @override
   void initState() {
     super.initState();
@@ -420,11 +424,18 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                           maxZoom: 18,
                         ),
                         children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${AppConfig.mapboxApiKey}',
-                            userAgentPackageName: 'smartbin_mobile',
-                          ),
+                          if (_hasMapboxToken)
+                            TileLayer(
+                              urlTemplate:
+                                  'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${AppConfig.mapboxApiKey}',
+                              userAgentPackageName: 'smartbin_mobile',
+                            )
+                          else
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'smartbin_mobile',
+                            ),
                           if (_routePoints.isNotEmpty)
                             PolylineLayer(
                               polylines: [
@@ -525,6 +536,20 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                             ),
                           ),
                         ),
+                      if (!_hasMapboxToken)
+                        const Positioned(
+                          top: 16,
+                          left: 16,
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(
+                                'Mapbox token missing. Using OpenStreetMap tiles.',
+                                style: TextStyle(fontSize: 11),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -571,7 +596,8 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                           itemBuilder: (context, index) {
                             final bin =
                                 _filteredBins[index] as Map<String, dynamic>;
-                            final fillLevel = (bin['fill_level'] ?? 0).toDouble();
+                            final fillLevel =
+                                (bin['fill_level'] ?? 0).toDouble();
                             final progress = (fillLevel / 100).clamp(0.0, 1.0);
                             final status = bin['status'] ?? 'normal';
                             final statusColor = _getStatusColor(status);
@@ -613,8 +639,7 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                                                   color: AppColors.subText,
                                                 ),
                                                 maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
@@ -633,8 +658,7 @@ class _AdminMapViewScreenState extends State<AdminMapViewScreen> {
                                       value: progress,
                                       color: statusColor,
                                       height: 10,
-                                      backgroundColor:
-                                          const Color(0xFFECEFF3),
+                                      backgroundColor: const Color(0xFFECEFF3),
                                     ),
                                     const SizedBox(height: 10),
                                     Row(

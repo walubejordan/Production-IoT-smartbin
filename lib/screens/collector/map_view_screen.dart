@@ -33,6 +33,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
   List<LatLng> _routePoints = const [];
   bool _routing = false;
 
+  bool get _hasMapboxToken =>
+      AppConfig.mapboxApiKey.isNotEmpty &&
+      !AppConfig.mapboxApiKey.contains('YOUR_MAPBOX_KEY_HERE');
+
   @override
   void initState() {
     super.initState();
@@ -159,11 +163,18 @@ class _MapViewScreenState extends State<MapViewScreen> {
                           maxZoom: 18,
                         ),
                         children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${AppConfig.mapboxApiKey}',
-                            userAgentPackageName: 'smartbin_mobile',
-                          ),
+                          if (_hasMapboxToken)
+                            TileLayer(
+                              urlTemplate:
+                                  'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${AppConfig.mapboxApiKey}',
+                              userAgentPackageName: 'smartbin_mobile',
+                            )
+                          else
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'smartbin_mobile',
+                            ),
                           if (_routePoints.isNotEmpty)
                             PolylineLayer(
                               polylines: [
@@ -275,6 +286,20 @@ class _MapViewScreenState extends State<MapViewScreen> {
                                   SizedBox(width: 12),
                                   Text('Calculating route...'),
                                 ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (!_hasMapboxToken)
+                        const Positioned(
+                          top: 16,
+                          left: 16,
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(
+                                'Mapbox token missing. Using OpenStreetMap tiles.',
+                                style: TextStyle(fontSize: 11),
                               ),
                             ),
                           ),
@@ -701,7 +726,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
                       const SizedBox(height: 2),
                       Text(
                         bin['location'],
-                        style: const TextStyle(fontSize: 11, color: AppColors.subText),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.subText),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
